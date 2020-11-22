@@ -1,0 +1,92 @@
+#+TITLE: Notes
+
+* Environment
+** Docker
+*** 安装以及官方文档
+https://docs.docker.com
+
+docker hub/Registry -> download image
+
+Docker container
+
+Docker Engine - Community
+
+docker -v
+
+docker国内镜像加速
+#+BEGIN_QUOTE
+https://www.cnblogs.com/yyxianren/p/10717174.html
+登录阿里云控制台，并打开 容器镜像服务，复制加速器地址
+Registry 密码：Welcome123
+
+在任务栏点击 Docker Desktop 应用图标 -> Perferences，在左侧导航菜单选择 Docker Engine，在右侧输入栏编辑 json 文件。将
+
+https://wyay22h0.mirror.aliyuncs.com加到"registry-mirrors"的数组里，点击 Apply & Restart按钮，等待Docker重启并应用配置的镜像加速器。
+#+END_QUOTE
+
+
+*** 安装mysql
+
+1. 下载镜像
+   https://hub.docker.com
+   search ~mysql~
+   =docker pull mysql:5.7=
+
+2. 下载客户端
+   https://sequelpro.com/download#auto-start
+   
+
+3. 创建实例并启动
+   #+BEGIN_SRC sh
+   docker run -p 3306:3306 --name mysql \
+       -v ~/Docker/mysql/log:/var/log/mysql \
+       -v ~/Docker/mysql/data:/var/lib/mysql \
+       -v ~/Docker/mysql/conf:/etc/mysql \
+       -e MYSQL_ROOT_PASSWORD=root \
+       -d mysql:5.7
+
+   #进入docker内部查看
+   docker exec -it mysql /bin/bash
+   #+END_SRC
+
+   修改配置，字符集为UTF-8
+   修改 ~/Docker/mysql/conf/my.cnf
+   #+BEGIN_QUOTE
+   [client]
+   default-character-set=utf8
+
+   [mysql]
+   default-character-set=utf8
+
+   [mysqld]
+   init_connect="SET collation_connection = utf8_unicode_ci"
+   init_connect="SET NAMES utf8"
+   character-set-server=utf8
+   collation-server=utf8_unicode_ci
+   skip-character-set-client-handshake
+   skip-name-resolve
+   #+END_QUOTE
+*** 安装Redis
+安装镜像
+=docker pull redis=
+
+启动实例
+=docker run --name some-redis -d redis=
+
+#+BEGIN_SRC sh
+#如果先创建文件会导致把conf映射成一个目录
+mkdir ~/Docker/redis/conf
+touch ~/Docker/redis/conf/redis.conf
+
+docker run -p 6379:6379 --name redis \
+    -v ~/Docker/redis/data:/data\
+    -v ~/Docker/redis/conf/redis.conf:/etc/redis/redis.conf\
+    -d redis redis-server /etc/redis/redis.conf
+
+#启动客户端并测试
+docker exec -it redis redis-cli
+#+END_SRC
+
+https://redis.io/topics/config
+持久化设置
+将 =appendonly=true= 加入 =~/Docker/redis/conf/redis.conf=
